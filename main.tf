@@ -9,7 +9,11 @@ variable "lgtmoon_aws_s3_policy" {
 }
 
 provider "aws" {
+  # ~/.aws/credentials の [lgtmoon] を見る
   profile = "lgtmoon"
+
+  # region は profile から読み込んでくれないので直接指定
+  region = "ap-northeast-1"
 }
 
 # LGTMoon アプリケーションから利用するユーザー

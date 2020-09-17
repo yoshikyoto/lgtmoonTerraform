@@ -32,7 +32,6 @@ terraform init
 [lgtmoon]
 aws_access_key_id = XXXXX
 aws_secret_access_key = XXXXXXXXXX
-region = ap-northeast-1
 ```
 
 ### terraform 実行
@@ -70,5 +69,5 @@ terraform apply prod.plan
 ### Teraform で作成したリソースをすべて削除する
 
 ```sh
-terraform destroy 
+terraform destroy  -var-file=xxxx
 ```
