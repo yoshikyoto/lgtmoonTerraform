@@ -37,8 +37,8 @@ region = ap-northeast-1
 
 ### terraform 実行
 
-workspace と ver ファイルを分けないでください。
-tfstate ファイル（現在のリソース状況を表すファイル）が壊れます。
+workspace と ver ファイルを正しく設定して下さい。
+環境が混ざると、 tfstate ファイル（現在のリソース状況を表すファイル）が壊れます。
 
 #### 開発環境に対して実行する
 
