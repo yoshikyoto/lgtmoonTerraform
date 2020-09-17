@@ -24,6 +24,17 @@ terraform --version                                                             
 terraform init
 ```
 
+### AWS 認証情報
+
+`~/.aws/credentials` に以下の設定を追加してください。
+
+```sh
+[lgtmoon]
+aws_access_key_id = XXXXX
+aws_secret_access_key = XXXXXXXXXX
+region = ap-northeast-1
+```
+
 ### terraform 実行
 
 workspace と ver ファイルを分けないでください。

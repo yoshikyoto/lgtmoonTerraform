@@ -1,7 +1,3 @@
-variable "aws_region" {
-  default = "ap-northeast-1"
-}
-
 variable "lgtmoon_aws_iam_user_name" {
   description = "LGTMoonからAWSを利用するためのIAMユーザー名"
 }
@@ -13,7 +9,6 @@ variable "lgtmoon_aws_s3_policy" {
 }
 
 provider "aws" {
-  region = var.aws_region
   profile = "lgtmoon"
 }
 
