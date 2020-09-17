@@ -18,7 +18,7 @@ rfenv install
 terraform --version                                                                                          [master]
 ```
 
-プラグイン等のインストール
+プラグイン等のインストールと設定をします。
 
 ```sh
 terraform init
@@ -26,14 +26,38 @@ terraform init
 
 ### terraform 実行
 
-planning / dry-run （実際には実行しない）
+workspace と ver ファイルを分けないでください。
+tfstate ファイル（現在のリソース状況を表すファイル）が壊れます。
+
+#### 開発環境に対して実行する
 
 ```sh
-terraform plan
+# workspace を dev にスイッチする
+terraform workspace select dev
+
+# 実行計画をたてる
+# 表示された実行計画に問題がないか確認する
+terraform plan -var-file=dev.tfvars -out=dev.plan
+
+# 実行する
+terraform apply dev.plan
 ```
 
-実行する
+実行後、 state ファイルをコミットして下さい。
+
+#### 本番環境に対して実行する
 
 ```sh
-terraform apply
+terraform workspace select prod
+terraform plan -var-file=prod.tfvars -out=prod.plan
+
+terraform apply prod.plan
+```
+
+実行後、 state ファイルをコミットして下さい。
+
+### Teraform で作成したリソースをすべて削除する
+
+```sh
+terraform destroy 
 ```
