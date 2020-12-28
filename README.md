@@ -69,5 +69,5 @@ terraform apply prod.plan
 ### Teraform で作成したリソースをすべて削除する
 
 ```sh
-terraform destroy  -var-file=xxxx
+terraform destroy -var-file=xxxx
 ```
