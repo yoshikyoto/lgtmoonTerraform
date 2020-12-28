@@ -1,10 +1,10 @@
-variable "lgtmoon_aws_iam_user_name" {
-  description = "LGTMoonからAWSを利用するためのIAMユーザー名"
+variable "lgtmoon_aws_user_name" {
+  description = "LGTMoonアプリから利用される AWS IAM のユーザー名"
 }
-variable "lgtmoon_aws_s3_bucket_name" {
+variable "lgtmoon_bucket_name" {
   description = "LGTM画像をアップロードするS3バケットの名前"
 }
-variable "lgtmoon_aws_s3_policy_name" {
+variable "allow_put_lgtmoon_bucket_policy_name" {
   description = "LGTM画像をアップロードするS3バケットにアクセス可能なポリシー"
 }
 
@@ -18,11 +18,11 @@ provider "aws" {
 
 # LGTMoon アプリケーションから利用するユーザー
 resource "aws_iam_user" "lgtmoon_user" {
-  name = var.lgtmoon_aws_iam_user_name
+  name = var.lgtmoon_aws_user_name
 }
 
-# S3バケットにパブリックからアクセスできるようなポリシー
-data "aws_iam_policy_document" "lgtmoon_bucket_policy" {
+# S3バケットにパブリックからアクセスできるようにするポリシー
+data "aws_iam_policy_document" "everyone_allow_get_object_in_lgtmoon_bucket" {
   statement {
     effect = "Allow"
     principals {
@@ -32,15 +32,15 @@ data "aws_iam_policy_document" "lgtmoon_bucket_policy" {
     }
     actions = ["s3:GetObject"]
     resources = [
-      "arn:aws:s3:::${var.lgtmoon_aws_s3_bucket_name}",
-      "arn:aws:s3:::${var.lgtmoon_aws_s3_bucket_name}/*"
+      "arn:aws:s3:::${var.lgtmoon_bucket_name}",
+      "arn:aws:s3:::${var.lgtmoon_bucket_name}/*"
     ]
   }
 }
 
-# S3 の public access block を無効に
-resource "aws_s3_bucket_public_access_block" "lgtmoon_bucket_access_block" {
-  bucket = var.lgtmoon_aws_s3_bucket_name
+# S3 の public access を可能にする設定
+resource "aws_s3_bucket_public_access_block" "allow_public_access_to_lgtmoon_bucet" {
+  bucket = var.lgtmoon_bucket_name
   block_public_acls = true
   block_public_policy = false
   ignore_public_acls = true
@@ -49,34 +49,33 @@ resource "aws_s3_bucket_public_access_block" "lgtmoon_bucket_access_block" {
 
 # S3バケットを作成
 resource "aws_s3_bucket" "lgtmoon_bucket" {
-  bucket = var.lgtmoon_aws_s3_bucket_name
-  policy = data.aws_iam_policy_document.lgtmoon_bucket_policy.json
+  // パブリックのアクセスを許可する
+  bucket = var.lgtmoon_bucket_name
+  // 誰でも GetObject になるような
+  policy = data.aws_iam_policy_document.everyone_allow_get_object_in_lgtmoon_bucket.json
   acl = "public-read"
 }
 
-# S3バケットにアクセスできるようなポリシー
-resource "aws_iam_policy" "lgtmoon_s3_policy" {
-  name = var.lgtmoon_aws_s3_policy_name
-  description = "for upload to LGTMoon S3 bucket"
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": "s3:PutObject",
-      "Resource": [
-        "arn:aws:s3:::${var.lgtmoon_aws_s3_bucket_name}",
-        "arn:aws:s3:::${var.lgtmoon_aws_s3_bucket_name}/*"
-      ]
-    }
-  ]
+data "aws_iam_policy_document" "allow_put_lgtmoon_bucket" {
+  statement {
+    effect = "Allow"
+    actions = ["s3:PutObject"]
+    resources = [
+      "arn:aws:s3:::${var.lgtmoon_bucket_name}",
+      "arn:aws:s3:::${var.lgtmoon_bucket_name}/*"
+    ]
+  }
 }
-EOF
+
+# S3バケットにアクセスできるようなポリシー
+resource "aws_iam_policy" "allow_put_lgtmoon_bucket" {
+  name = var.allow_put_lgtmoon_bucket_policy_name
+  description = "for upload to LGTMoon S3 bucket"
+  policy = data.aws_iam_policy_document.allow_put_lgtmoon_bucket.json
 }
 
 # ポリシーをLGTMoonアプリケーションユーザーにアタッチ
-resource "aws_iam_user_policy_attachment" "lgtmoon_s3_policy_attach" {
+resource "aws_iam_user_policy_attachment" "attach_policy_to_allow_lgtmoon_user_put_bucket" {
   user = aws_iam_user.lgtmoon_user.name
-  policy_arn = aws_iam_policy.lgtmoon_s3_policy.arn
+  policy_arn = aws_iam_policy.allow_put_lgtmoon_bucket.arn
 }
